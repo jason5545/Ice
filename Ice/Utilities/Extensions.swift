@@ -522,6 +522,11 @@ extension NSScreen {
         deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as! CGDirectDisplayID
     }
 
+    /// A Boolean value that indicates whether the screen is the built-in display.
+    var isBuiltIn: Bool {
+        CGDisplayIsBuiltin(displayID) != 0
+    }
+
     /// A Boolean value that indicates whether the screen has a notch.
     var hasNotch: Bool {
         safeAreaInsets.top != 0

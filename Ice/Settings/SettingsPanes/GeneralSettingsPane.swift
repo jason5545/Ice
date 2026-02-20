@@ -176,8 +176,15 @@ struct GeneralSettingsPane: View {
     private var iceBarOptions: some View {
         useIceBar
         if settings.useIceBar {
+            iceBarOnInternalDisplayOnly
             iceBarLocationPicker
         }
+    }
+
+    @ViewBuilder
+    private var iceBarOnInternalDisplayOnly: some View {
+        Toggle("Only on internal display", isOn: $settings.iceBarOnInternalDisplayOnly)
+            .annotation("Only use the Ice Bar on the internal display.")
     }
 
     @ViewBuilder

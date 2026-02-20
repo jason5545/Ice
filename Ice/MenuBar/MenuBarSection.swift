@@ -55,8 +55,8 @@ final class MenuBarSection {
     private var rehideMonitor: EventMonitor?
 
     /// A Boolean value that indicates whether the Ice Bar should be used.
-    private var useIceBar: Bool {
-        appState?.settings.general.useIceBar ?? false
+    private func useIceBar(for screen: NSScreen) -> Bool {
+        appState?.settings.general.useIceBar(for: screen) ?? false
     }
 
     /// A weak reference to the menu bar manager.
@@ -78,7 +78,10 @@ final class MenuBarSection {
 
     /// A Boolean value that indicates whether the section is hidden.
     var isHidden: Bool {
-        if useIceBar {
+        guard let screen = screenForIceBar ?? NSScreen.main else {
+            return true
+        }
+        if useIceBar(for: screen) {
             if controlItem.state == .showSection {
                 return false
             }
@@ -161,7 +164,11 @@ final class MenuBarSection {
             return
         }
 
-        if useIceBar {
+        guard let screen = screenForIceBar ?? NSScreen.main else {
+            return
+        }
+
+        if useIceBar(for: screen) {
             // Make sure hidden and always-hidden control items are collapsed.
             // Still update the visible control item (Ice icon) state to show
             // its alternate icon.
@@ -174,16 +181,14 @@ final class MenuBarSection {
                 }
             }
 
-            if let screen = screenForIceBar {
-                Task {
-                    switch name {
-                    case .visible, .hidden:
-                        await menuBarManager.iceBarPanel.show(section: .hidden, on: screen)
-                    case .alwaysHidden:
-                        await menuBarManager.iceBarPanel.show(section: .alwaysHidden, on: screen)
-                    }
-                    startRehideChecks()
+            Task {
+                switch name {
+                case .visible, .hidden:
+                    await menuBarManager.iceBarPanel.show(section: .hidden, on: screen)
+                case .alwaysHidden:
+                    await menuBarManager.iceBarPanel.show(section: .alwaysHidden, on: screen)
                 }
+                startRehideChecks()
             }
 
             return // We're done.
@@ -216,8 +221,12 @@ final class MenuBarSection {
         menuBarManager.iceBarPanel.close() // Make sure Ice Bar is always closed.
         menuBarManager.showOnHoverAllowed = true
 
+        guard let screen = screenForIceBar ?? NSScreen.main else {
+            return
+        }
+
         switch name {
-        case _ where useIceBar, .visible, .hidden:
+        case _ where useIceBar(for: screen), .visible, .hidden:
             for section in menuBarManager.sections {
                 section.controlItem.state = .hideSection
             }

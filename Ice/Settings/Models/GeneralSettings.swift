@@ -31,6 +31,10 @@ final class GeneralSettings: ObservableObject {
     /// in a separate bar below the menu bar.
     @Published var useIceBar = false
 
+    /// A Boolean value that indicates whether to use the Ice Bar
+    /// only on the internal display.
+    @Published var iceBarOnInternalDisplayOnly = false
+
     /// The location where the Ice Bar appears.
     @Published var iceBarLocation: IceBarLocation = .dynamic
 
@@ -75,6 +79,12 @@ final class GeneralSettings: ObservableObject {
     /// The shared app state.
     private(set) weak var appState: AppState?
 
+    /// Returns a Boolean value that indicates whether the Ice Bar
+    /// should be used on the given screen.
+    func useIceBar(for screen: NSScreen) -> Bool {
+        useIceBar && (!iceBarOnInternalDisplayOnly || screen.isBuiltIn)
+    }
+
     /// Performs the initial setup of the model.
     func performSetup(with appState: AppState) {
         self.appState = appState
@@ -87,6 +97,7 @@ final class GeneralSettings: ObservableObject {
         Defaults.ifPresent(key: .showIceIcon, assign: &showIceIcon)
         Defaults.ifPresent(key: .customIceIconIsTemplate, assign: &customIceIconIsTemplate)
         Defaults.ifPresent(key: .useIceBar, assign: &useIceBar)
+        Defaults.ifPresent(key: .iceBarOnInternalDisplayOnly, assign: &iceBarOnInternalDisplayOnly)
         Defaults.ifPresent(key: .showOnClick, assign: &showOnClick)
         Defaults.ifPresent(key: .showOnHover, assign: &showOnHover)
         Defaults.ifPresent(key: .showOnScroll, assign: &showOnScroll)
@@ -157,6 +168,13 @@ final class GeneralSettings: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { useIceBar in
                 Defaults.set(useIceBar, forKey: .useIceBar)
+            }
+            .store(in: &c)
+
+        $iceBarOnInternalDisplayOnly
+            .receive(on: DispatchQueue.main)
+            .sink { iceBarOnInternalDisplayOnly in
+                Defaults.set(iceBarOnInternalDisplayOnly, forKey: .iceBarOnInternalDisplayOnly)
             }
             .store(in: &c)
 

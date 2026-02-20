@@ -161,8 +161,9 @@ final class MenuBarManager: ObservableObject {
                 //   * The active space is fullscreen.
                 //   * The settings window is visible.
                 guard
+                    let screen = NSScreen.main,
                     appState.settings.advanced.hideApplicationMenus,
-                    !appState.settings.general.useIceBar,
+                    !appState.settings.general.useIceBar(for: screen),
                     !isMenuBarHiddenBySystem,
                     !appState.activeSpace.isFullscreen,
                     !appState.navigationState.isSettingsPresented
@@ -171,10 +172,6 @@ final class MenuBarManager: ObservableObject {
                 }
 
                 if sections.contains(where: { $0.controlItem.state == .showSection }) {
-                    guard let screen = NSScreen.main else {
-                        return
-                    }
-
                     // Get the application menu frame for the display.
                     guard let applicationMenuFrame = screen.getApplicationMenuFrame() else {
                         return
